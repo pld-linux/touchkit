@@ -1,0 +1,430 @@
+diff -Nur touchkit.orig/Makefile touchkit/Makefile
+--- touchkit.orig/Makefile	Tue Jun 25 04:19:04 2002
++++ touchkit/Makefile	Thu Dec 19 22:19:52 2002
+@@ -13,20 +13,13 @@
+ 	EXEC := $(shell echo '(E) Tcl/Tk not installed' > /dev/tty)
+ 	error stop
+ else
+-	TCL := $(shell echo $(TCLSH) | sed 's/tclsh/tcl/')
+-	EXEC := $(shell ln -s $(TCLSH) $(TCL))
++	TCL := $(TCLSH)
+ endif
+ endif
+ 
+-MODULE_HOME = $(shell find /lib/modules -name usb -type d)
+-
+-ifeq ($(MODULE_HOME),)
+-	MODULE_HOME = ""
+-endif
+-
+ XMODULE_HOME = /usr/X11R6/lib/modules/
+ 
+-XINITRC_D = $(shell find /etc -type d -name xinit\*.d)
++XINITRC_D = /etc/X11/xinit/xinitrc.d
+ 
+ GLOBAL_SETTING := configSTR.mak
+ CMD := $(shell make -C include $(GLOBAL_SETTING))
+@@ -72,164 +65,94 @@
+ 
+ ##################################################################
+ 
+-USB_PRESENT = $(shell test -d /proc/bus/usb && \
+-				 ! test -f /tmp/.usb.on -a `cat /tmp/.usb.on` = 0; expr 1 - $$?)
++USB_PRESENT = 1
+ 
+ $(GLOGAL_SETTING):
+ 	$(MAKE) -C $$n $@ || exit 1;
+ 
+-ifeq ($(shell whoami),root)
+-
+ install:
+ 	@make $(MAKE_OPT) _install
+ 
+ uninstall: $(PRJ_HOME)Makefile
+ 	@make $(MAKE_OPT) _uninstall
+ 
+-else
+-
+-install:
+-	:
+-	: You must have root privilege to do this
+-	:
+-		
+-uninstall:
+-	:
+-	: You must have root privilege to do this
+-	:
+-
+-endif
+-
+ DIRECTORY = $(PRJ_HOME) $(PRJ_INCLUDE_HOME) $(PRJ_UTILITY_HOME) \
+-			$(PRJ_DIAG_HOME) $(PRJ_IMAGE_HOME)
++			$(PRJ_DIAG_HOME) $(PRJ_IMAGE_HOME) /usr/bin
+ 
+ UNINSTALL = uninstall_$(PRJNAME)
+ 	
+ _install:
+ 	for n in $(DIRECTORY) ; do					\
+ 		: echo "(*) Create directory [$$n]";	\
+-		if [ ! -d $$n ] ; then					\
+-			mkdir $$n || exit 1;				\
++		if [ ! -d $(DESTDIR)$$n ] ; then					\
++			install -d $(DESTDIR)$$n || exit 1;				\
+ 		fi;										\
+ 	done
+ 	:
+ 	cp -f include/configSTR.tcl include/configINT.tcl \
+ 			include/configSTR.mak include/configINT.mak \
+ 			include/touch.tcl \
+-			$(PRJ_INCLUDE_HOME)
++			$(DESTDIR)$(PRJ_INCLUDE_HOME)
+ 	:
+ 	if [ $(USB_PRESENT) -eq 1 ] ; then             					\
+-		cp -f usb/usbpnpd $(PRJ_HOME)$(USBPNPD_NAME);				\
+-		rm -f /usr/bin/$(USBPNPD_NAME);								\
+-		ln -s $(PRJ_HOME)$(USBPNPD_NAME) /usr/bin;					\
+-		tcl utility/usbdcfg.tcl;									\
++		cp -f usb/usbpnpd $(DESTDIR)$(PRJ_HOME)$(USBPNPD_NAME);				\
++		rm -f $(DESTDIR)/usr/bin/$(USBPNPD_NAME);								\
++		ln -s $(PRJ_HOME)$(USBPNPD_NAME) $(DESTDIR)/usr/bin;					\
+ 		:;															\
+-		rm -f $(USBPORT)*;											\
+-		i=0; while [ $$i -lt $(SCR_MAX_MNR) ] ; do					\
+-			mknod $(USBPORT)$$i c 180 `expr $(SCR_BASE_MNR) + $$i`;	\
+-			i=`expr $$i + 1`;										\
+-		done;														\
+-		if [ -f usb/tkusb.o ] ; then								\
+-			for d in $(MODULE_HOME) ; do							\
+-				printf "(*) Install USB module";					\
+-				echo " [$$d/$(USBMODULE_NAME).o]";					\
+-				cp -f usb/tkusb.o $$d/$(USBMODULE_NAME).o;			\
+-			done;													\
+-		fi;															\
+ 	fi
+ 	:
+ 	echo "(*) Install touch panel daemon [/usr/bin/$(TPANELD_NAME)]"
+ 	if [ ! -d $($(PRJNAME)_ROMHOME) ] ; then			\
+-		mkdir $($(PRJNAME)_ROMHOME);					\
++		install -d $(DESTDIR)$($(PRJNAME)_ROMHOME);					\
+ 	fi
+-	cp -f driver/tpaneld $(PRJ_HOME)$(TPANELD_NAME)
+-	chmod 4755 $(PRJ_HOME)$(TPANELD_NAME)
+-	rm -f /usr/bin/$(TPANELD_NAME)
+-	ln -s $(PRJ_HOME)$(TPANELD_NAME) /usr/bin/
++	install -m755 driver/tpaneld $(DESTDIR)$(PRJ_HOME)$(TPANELD_NAME)
++	rm -f $(DESTDIR)/usr/bin/$(TPANELD_NAME)
++	ln -s $(PRJ_HOME)$(TPANELD_NAME) $(DESTDIR)/usr/bin/
+ 	if [ "$(XINITRC_D)" != "" ] ; then										\
+-		echo "#!/bin/sh" > $(XINITRC_D)/$(TPANELD_NAME);					\
+-		echo "/usr/bin/$(TPANELD_NAME) -f &" >> $(XINITRC_D)/$(TPANELD_NAME);\
+-		chmod 755 $(XINITRC_D)/$(TPANELD_NAME);								\
+-	else																	\
+-		pushd . > /dev/null;												\
+-		cd;																	\
+-		home=`pwd`;															\
+-		popd > /dev/null;													\
+-		if [ ! -f $$home/.Xclients.bak.tp ] ; then							\
+-			cp -f $$home/.Xclients $$home/.Xclients.bak.tp;					\
+-		fi;																	\
+-		echo "/usr/bin/$(TPANELD_NAME) &" > $$home/.Xclients;				\
+-		if [ -f $$home/.Xclients.bak.tp ] ; then							\
+-			cat $$home/.Xclients.bak.tp >> $$home/.Xclients;				\
+-		fi;																	\
++		install -d $(DESTDIR)$(XINITRC_D); \
++		echo "#!/bin/sh" > $(DESTDIR)$(XINITRC_D)/$(TPANELD_NAME);					\
++		echo "/usr/bin/$(TPANELD_NAME) -f &" >> $(DESTDIR)$(XINITRC_D)/$(TPANELD_NAME);\
++		chmod 755 $(DESTDIR)$(XINITRC_D)/$(TPANELD_NAME);								\
+ 	fi
+ 	:
+ 	echo "(*) Install configuration utility [/usr/bin/$(TOUCHCFG_NAME)]"
+ 	cp -f utility/PanelInfo utility/library.tcl			\
+ 			utility/rclocal.tcl utility/xf86cfg.tcl		\
+ 			utility/xversion.tcl utility/shortcut.tcl	\
+-			utility/WriteConf $(PRJ_UTILITY_HOME) 
+-	chmod 4755 $(PRJ_UTILITY_HOME)PanelInfo $(PRJ_UTILITY_HOME)WriteConf
+-	cp -f image/* $(PRJ_IMAGE_HOME)
+-	cp -f diag/*.t?? $(PRJ_DIAG_HOME)
+-	cp -f diag/drawtest $(PRJ_DIAG_HOME)$(DRAW_NAME)
+-	cp -f diag/25pcal $(PRJ_DIAG_HOME)$(_25PCAL_NAME)
+-	cp -f diag/4pcal $(PRJ_DIAG_HOME)$(_4PCAL_NAME)
+-	chmod 4755 $(PRJ_DIAG_HOME)$(DRAW_NAME) $(PRJ_DIAG_HOME)$(_25PCAL_NAME) \
+-					$(PRJ_DIAG_HOME)$(_4PCAL_NAME)
++			utility/WriteConf $(DESTDIR)$(PRJ_UTILITY_HOME) 
++	cp -f image/* $(DESTDIR)$(PRJ_IMAGE_HOME)
++	cp -f diag/*.t?? $(DESTDIR)$(PRJ_DIAG_HOME)
++	cp -f diag/drawtest $(DESTDIR)$(PRJ_DIAG_HOME)$(DRAW_NAME)
++	cp -f diag/25pcal $(DESTDIR)$(PRJ_DIAG_HOME)$(_25PCAL_NAME)
++	cp -f diag/4pcal $(DESTDIR)$(PRJ_DIAG_HOME)$(_4PCAL_NAME)
+ 	:
+ 	: Generate $(TOUCHCFG_NAME)
+-	echo "#!/bin/sh" > $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	echo "echo puts [catch {wm withdraw .}]\; exit > /tmp/exit_test" >> $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	echo "rval=\`wish /tmp/exit_test \$$* 2>&1\`" >> $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	echo "rm -f /tmp/exit_test" >> $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	: echo "echo \$$rval" >> $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	echo "if [ \"\$$rval\" == 0 ] ; then" >> $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	echo "	exec $(PRJ_DIAG_HOME)touchcfg.tcl $(PRJ_HOME) \$$*" >> $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	echo "else" >> $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	echo "	echo can not open display" >> $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	echo "fi" >> $(PRJ_HOME)$(TOUCHCFG_NAME)
+-	chmod 755 $(PRJ_HOME)$(TOUCHCFG_NAME)
++	echo "#!/bin/sh" > $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	echo "echo puts [catch {wm withdraw .}]\; exit > /tmp/exit_test" >> $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	echo "rval=\`wish /tmp/exit_test \$$* 2>&1\`" >> $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	echo "rm -f /tmp/exit_test" >> $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	: echo "echo \$$rval" >> $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	echo "if [ \"\$$rval\" == 0 ] ; then" >> $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	echo "	exec $(PRJ_DIAG_HOME)touchcfg.tcl $(PRJ_HOME) \$$*" >> $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	echo "else" >> $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	echo "	echo can not open display" >> $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	echo "fi" >> $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
++	chmod 755 $(DESTDIR)$(PRJ_HOME)$(TOUCHCFG_NAME)
+ 	: Generation OK
+ 	:
+-	rm -f /usr/bin/$(TOUCHCFG_NAME)
+-	ln -s $(PRJ_HOME)$(TOUCHCFG_NAME) /usr/bin
++	rm -f $(DESTDIR)/usr/bin/$(TOUCHCFG_NAME)
++	ln -s $(PRJ_HOME)$(TOUCHCFG_NAME) $(DESTDIR)/usr/bin
+ 	:
+-	if [ `tcl utility/xversion.tcl` -lt 400 ] ; then						\
++	if [ `$(TCL) utility/xversion.tcl` -lt 400 ] ; then						\
+ 		echo "(*) Install XFree86 driver [$(XMODULE_HOME)$(XMODULE)]";	\
+-		cp -f xf86drv/bin/xf86TouchKit.so $(XMODULE_HOME)$(XMODULE);	\
+-		chmod 755 $(XMODULE_HOME)$(XMODULE);							\
++		install -d $(DESTDIR)$(XMODULE_HOME); \
++		install -m 755 xf86drv/bin/xf86TouchKit.so $(DESTDIR)$(XMODULE_HOME)$(XMODULE);	\
+ 	else																\
+ 		echo "(*) Install XFree86 driver [$(XMODULE_HOME)input/$(XDRIVER)]";\
+-		cp -f xf86drv/bin/touchkit_drv.o $(XMODULE_HOME)input/$(XDRIVER);\
+-		chmod 755 $(XMODULE_HOME)input/$(XDRIVER);						\
++		install -d $(DESTDIR)$(XMODULE_HOME)input ; \
++		install -m 755 xf86drv/bin/touchkit_drv.o $(DESTDIR)$(XMODULE_HOME)input/$(XDRIVER);\
+ 	fi
+ 	:
+-	# Need shortcut for TOUCHCFG?
+-	:
+-	echo "(*) Generate uninstall script [/usr/bin/$(UNINSTALL)]"
+-	echo '#!/bin/sh'							> $(PRJ_HOME)$(UNINSTALL)
+-	echo 'echo ===== $(PRJNAME) Uninstaller =====' >> $(PRJ_HOME)$(UNINSTALL)
+-	echo 'printf "Are you sure to remove driver and utility? (Y)es/(N)o [N]"' >> $(PRJ_HOME)$(UNINSTALL)
+-	echo 'read cmd'								>> $(PRJ_HOME)$(UNINSTALL)
+-	echo 'case $$cmd in'						>> $(PRJ_HOME)$(UNINSTALL)
+-	echo '	[yY]|[yY][eE][sS]) :;;'				>> $(PRJ_HOME)$(UNINSTALL)
+-	echo '	*) exit 0;;'						>> $(PRJ_HOME)$(UNINSTALL)
+-	echo 'esac'									>> $(PRJ_HOME)$(UNINSTALL)
+-	echo 'cd /'									>> $(PRJ_HOME)$(UNINSTALL)
+-	echo 'make -C $(PRJ_HOME) -s uninstall'	>> $(PRJ_HOME)$(UNINSTALL)
+-	: Generation OK
+-	chmod 754 $(PRJ_HOME)$(UNINSTALL)
+-	rm -rf /usr/bin/$(UNINSTALL)
+-	ln -s $(PRJ_HOME)$(UNINSTALL) /usr/bin/$(UNINSTALL)
+-	cp -f Makefile $(PRJ_HOME)
+-	:
+-	: update starting up scripts
+-	tcl utility/rclocal.tcl
+-	tcl utility/xf86cfg.tcl
+-	:
+-	: create desktop shortcuts for KDE and GNome
+-	tcl utility/shortcut.tcl $(PRJ_IMAGE_HOME)
+ 	:
+ 	echo "+--------------------------------------+"
+ 	echo "|  Installation Complete Successfully  |"
+diff -Nur touchkit.orig/diag/makefile touchkit/diag/makefile
+--- touchkit.orig/diag/makefile	Wed Nov  7 05:16:09 2001
++++ touchkit/diag/makefile	Thu Dec 19 22:18:40 2002
+@@ -39,7 +39,7 @@
+ 	xmkmf
+ 
+ Imakefile: makefile
+-	echo 'CFLAGS = -Wall -ggdb2 -I ../include' > $@
++	echo "CFLAGS = -Wall $(OPT) -I ../include" > $@
+ 	echo 'COMMON_HEADER = ../include/eeprom.c' >> $@
+ 	echo 'LOCAL_LIBRARIES = $$(XLIB)' >> $@
+ 	for t in $(TARGET); do 			\
+diff -Nur touchkit.orig/driver/Makefile touchkit/driver/Makefile
+--- touchkit.orig/driver/Makefile	Tue Aug 28 04:02:44 2001
++++ touchkit/driver/Makefile	Thu Dec 19 22:18:40 2002
+@@ -3,7 +3,8 @@
+ 
+ INCLUDE = -I. -I../include
+ 
+-C_FLAGS = -g -O -Wall $(INCLUDE)
++OPT = -g -O
++C_FLAGS = $(OPT) -Wall $(INCLUDE)
+ 
+ TARGET = tpaneld
+ 
+@@ -36,5 +37,4 @@
+ 
+ tpaneld: tpaneld.c $(INCLUDED) Makefile
+ 	$(CC) -o $@ $< $(C_FLAGS) $(L_FLAGS)
+-	strip $@
+ 	
+diff -Nur touchkit.orig/include/Makefile touchkit/include/Makefile
+--- touchkit.orig/include/Makefile	Wed Apr 17 07:49:07 2002
++++ touchkit/include/Makefile	Thu Dec 19 22:18:40 2002
+@@ -1,5 +1,4 @@
+ 
+-TCL		= tcl	
+ TCL2H	= ../utility/tcl2h.tcl
+ TCL2SH	= ../utility/tcl2sh.tcl
+ TCL2MAK	= ../utility/tcl2mak.tcl
+diff -Nur touchkit.orig/include/configSTR.tcl touchkit/include/configSTR.tcl
+--- touchkit.orig/include/configSTR.tcl	Wed May 15 05:13:09 2002
++++ touchkit/include/configSTR.tcl	Thu Dec 19 22:18:40 2002
+@@ -29,14 +29,14 @@
+ set ${PRJNAME}_ROMHOME		"/etc/tpanel.rom/"
+ set ${PRJNAME}_CONF			"/etc/tpaneld.conf"
+ 
+-set TOUCHCFG_CMD			"/tmp/touchcfg.cmd"
++set TOUCHCFG_CMD			"/var/run/touchcfg.cmd"
+ 
+-set ${PRJNAME}_HOME			"/usr/local/${PRJNAME}/"
++set ${PRJNAME}_HOME			"/usr/lib/${PRJNAME}/"
+ 
+ set XMODULE_HOME			"/usr/X11R6/lib/modules/"
+ set XDRV_HOME				"${XMODULE_HOME}input/"
+ 
+-set RCLICK_LOCK				"/tmp/rclick.lock"
++set RCLICK_LOCK				"/var/run/rclick.lock"
+ 
+ set ${PRJNAME}_USBMODULE	"$PRJNAME"
+ 
+diff -Nur touchkit.orig/usb/Makefile touchkit/usb/Makefile
+--- touchkit.orig/usb/Makefile	Tue Apr 23 06:54:25 2002
++++ touchkit/usb/Makefile	Thu Dec 19 22:18:40 2002
+@@ -13,57 +13,36 @@
+ 
+ FRIEND = mousedev
+ 
+-USB_PRESENT = $(shell test -d /proc/bus/usb; expr 1 - $$?)
++USB_PRESENT = 1
+ 
+ GLOBAL = ../include/configINT.tcl ../include/configSTR.tcl
+ 
+ CC = gcc
++KGCC = gcc
+ 
+ INCLUDE = -I ../include
+ 
+-C_FLAGS = -Wall -O -pipe $(INCLUDE)
+-
+-K_VERSION = $(shell uname -r)
++OPT = -O
++C_FLAGS = -Wall $(OPT) -pipe $(INCLUDE)
+ 
++ifeq ($(LINUX_PATH),)
+ LINUX_PATH = $(shell ls -1d /usr/src/linux* 2> /dev/null | head -n 1)
+-
+-ifneq ($(LINUX_PATH),)
+-	K_PRESENT = $(shell test -f $(LINUX_PATH)/include/linux/modversions.h;\
+-					 expr 1 - $$?)
+-ifneq ($(LINUX_PATH),/usr/src/linux)
+-	EXEC = $(shell ln -s $(LINUX_PATH) /usr/src/linux; echo link)
+-endif
+-else
+-	K_PRESENT = $(shell rpm -qa | grep kernel | grep source > /dev/null ;\
+-					 expr 1 - $$?)
+ endif
+ 
+-ifeq ($(EXEC),)
+-endif
+-    
+ ###################################################################
+ 
+ all: rebuild
+ 	@if [ -f $(DAEMON) ]; then		\
+ 		cp -f $(DAEMON) bin;		\
+ 	fi
+-	@if [ -f $(MODULE).o ] 			\
+-		&& [ -f $(CMDFILE) ] 		\
+-		&& diff $(CMDFILE) mkmodule.cmd > /dev/null ; then	\
+-		cp -f $(MODULE).o bin/$(K_VERSION);					\
+-	fi
+ 
+ auto: auto_module
+ 	cp -f bin/$(DAEMON) .
+ 	
+ auto_module:
+-	@if [ -f bin/$(K_VERSION) ]; then										\
+-		cp -f bin/$(K_VERSION) $(MODULE).o;									\
+-	else																	\
+ 		echo '+---------------------------------------+';					\
+ 		echo '| USB module: building process skipped  |';					\
+ 		echo '+---------------------------------------+';					\
+-	fi
+ 
+ rebuild:
+ 	make -s _rebuild
+@@ -76,22 +55,11 @@
+ 		echo '(I) USB subsystem NOT detected; skip building';\
+ 	fi
+ 
+-do_rebuild: $(DAEMON) build_module
++do_rebuild: $(DAEMON) do_build_module
+ 
+ $(DAEMON): $(DAEMON).c Makefile $(GLOBAL)
+ 	echo $(CC) -o $@ $(DAEMON).c $(C_FLAGS) $(L_FLAGS)
+ 	$(CC) -o $@ $(DAEMON).c $(C_FLAGS) $(L_FLAGS)
+-	strip $@
+-
+-build_module:
+-	@if [ $(K_PRESENT) -eq 1 ]; then			\
+-		make do_build_module;					\
+-	else										\
+-		echo '(!) ';							\
+-		echo '(!) Failed to build kernel module; package "kernel-source" not installed';\
+-		echo '(!) ';							\
+-		false;									\
+-	fi;											\
+ 
+ clean:
+ 	rm -f $(DAEMON) $(MODULE).o $(CMDFILE) core *.bak
+@@ -100,12 +68,10 @@
+ 
+ do_build_module: $(MODULE).o
+ 
+-%.o: %.c %.h %_dbg.h $(CMDFILE) $(GLOBAL)
+-	tcl ../utility/mkmodule.tcl $(CMDFILE) $(FRIEND) $@ $(INCLUDE)
++%.o: %.c %.h %_dbg.h $(GLOBAL)
++	$(KGCC) -D__KERNEL__ -I$(LINUX_PATH)/include -I../include -Wall $(OPT) -DMODULE -c $(MODULE).c -o $(MODULE).o
++	$(KGCC) -D__KERNEL__ -D__SMP__  -D__KERNEL_SMP=1 -I$(LINUX_PATH)/include -I../include -Wall $(OPT) -DMODULE -c $(MODULE).c -o $(MODULE)-smp.o
+ 
+-$(CMDFILE): mkmodule.cmd
+-	cp -f $< $@
+-	
+ get_setting:
+ 	make -s _get_setting
+ 	
+diff -Nur touchkit.orig/utility/Makefile touchkit/utility/Makefile
+--- touchkit.orig/utility/Makefile	Tue Jun 25 04:14:38 2002
++++ touchkit/utility/Makefile	Thu Dec 19 22:18:40 2002
+@@ -3,7 +3,8 @@
+ 
+ INCLUDE = -I. -I../include
+ 
+-C_FLAGS = -g -O -Wall $(INCLUDE)
++OPT = -g -O
++C_FLAGS = $(OPT) -Wall $(INCLUDE)
+ 
+ TARGET = PanelInfo WriteConf
+ 
+@@ -36,6 +37,5 @@
+ 
+ %: %.c $(INCLUDED) Makefile
+ 	$(CC) -o $@ $< $(C_FLAGS) $(L_FLAGS)
+-	strip $@
+ 
+ 	
+diff -Nur touchkit.orig/xf86drv/makefile touchkit/xf86drv/makefile
+--- touchkit.orig/xf86drv/makefile	Tue Apr 16 08:33:18 2002
++++ touchkit/xf86drv/makefile	Thu Dec 19 22:20:04 2002
+@@ -7,7 +7,7 @@
+ 
+ #############################################################################
+ 
+-XVERSION = $(shell tcl ../utility/xversion.tcl)
++XVERSION = $(shell $(TCL) ../utility/xversion.tcl)
+ 
+ include ../include/configSTR.mak
+ 

@@ -1,3 +1,7 @@
+#
+# Conditional build:
+# _without_dist_kernel	- without kernel from distribution
+#
 Summary:	eGalax TouchKit drivers and utilities
 Summary(pl):	Sterowniki i narzêdzia do paneli dotykowych eGalax TouchKit
 Name:		touchkit
@@ -117,16 +121,16 @@ install usb/tkusb-smp.o $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/tkusb
 rm -rf $RPM_BUILD_ROOT
 
 %post	-n kernel-usb-touchkit
-/sbin/depmod -a
+/sbin/depmod -a -F /boot/System.map-%{_kernel_ver} %{_kernel_ver}
 
 %postun	-n kernel-usb-touchkit
-/sbin/depmod -a
+/sbin/depmod -a -F /boot/System.map-%{_kernel_ver} %{_kernel_ver}
 
 %post	-n kernel-smp-usb-touchkit
-/sbin/depmod -a
+/sbin/depmod -a -F /boot/System.map-%{_kernel_ver}smp %{_kernel_ver}smp
 
 %postun	-n kernel-smp-usb-touchkit
-/sbin/depmod -a
+/sbin/depmod -a -F /boot/System.map-%{_kernel_ver}smp %{_kernel_ver}smp
 
 %files utils
 %defattr(644,root,root,755)

@@ -1,0 +1,21 @@
+--- touchkit/usb/tkusb.c.orig	Wed Jun 12 01:52:20 2002
++++ touchkit/usb/tkusb.c	Sat Dec 21 13:35:20 2002
+@@ -855,12 +855,12 @@
+ 
+ static struct
+ usb_driver tscreen_driver = {
+-       IDcat(PRJNAME, _USBMODULE),
+-       probe_tscreen,
+-       disconnect_tscreen,
+-       { NULL, NULL },
+-       &usb_tscreen_fops,
+-       SCR_BASE_MNR
++	name:		IDcat(PRJNAME, _USBMODULE),
++	probe:		probe_tscreen,
++	disconnect:	disconnect_tscreen,
++	driver_list:	{ NULL, NULL },
++	fops:		&usb_tscreen_fops,
++	minor:		SCR_BASE_MNR
+ };
+ 
+ void __exit

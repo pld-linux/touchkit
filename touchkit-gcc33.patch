@@ -1,0 +1,42 @@
+--- touchkit/include/configSTR.tcl.orig	2003-12-27 02:26:21.000000000 +0100
++++ touchkit/include/configSTR.tcl	2003-12-27 02:29:53.066066040 +0100
+@@ -116,27 +116,27 @@
+ 	unset usb
+ }
+ 
+-set DefaultConfData			"
+-$_MouseMode = $sDefaultMode
+-$_DblClickSpeed = $DefaultDblClickSpeed
+-$_DblClickArea = $DefaultDblClickArea
+-$_RClickTool = $DefaultRClickTool
+-$_Sound = $sDefaultSoundMode
+-
++set DefaultConfData			"\\n\\
++$_MouseMode = $sDefaultMode\\n\\
++$_DblClickSpeed = $DefaultDblClickSpeed\\n\\
++$_DblClickArea = $DefaultDblClickArea\\n\\
++$_RClickTool = $DefaultRClickTool\\n\\
++$_Sound = $sDefaultSoundMode\\n\\
++\\n\\
+ "
+ 
+ set USBPNPD_ACTION		\
+ 	[subst {insmod $USBMODULE_NAME; /usr/bin/$TPANELD_NAME reset}]
+ 
+-set DefaultUSBpnpdConf		"
+-#Device = VendorID, ProductID, ActionIfPlugIn
+-
++set DefaultUSBpnpdConf		"\\n\\
++#Device = VendorID, ProductID, ActionIfPlugIn\\n\\
++\\n\\
+ Device = [ format {0x%04X, 0x%04X, %s} \
+-	[subst $${PRJNAME}_USB_VID] [subst $${PRJNAME}_USB_PID] $USBPNPD_ACTION]
++	[subst $${PRJNAME}_USB_VID] [subst $${PRJNAME}_USB_PID] $USBPNPD_ACTION]\\n\\
+ "
+ 
+ foreach device $DefaultDeviceList {
+-	append DefaultConfData "$_Port = $device\n"
++	append DefaultConfData "$_Port = $device\\n\\\n"
+ }
+ 
+ unset device

@@ -428,3 +428,33 @@ diff -Nur touchkit.orig/xf86drv/makefile touchkit/xf86drv/makefile
  
  include ../include/configSTR.mak
  
+@@ -66,16 +66,16 @@
+ new: clean all
+ 
+ $(DRV_NAME)_drv.o : xf86$(MOD_NAME).c xf86$(MOD_NAME).h ../include/TouchCmd.h
+-	make -f Makefile -n -s | tcl ../utility/replace.tcl "-I./" -I${XF86SRC.401} > ${CMDFILE}
+-	tcl ../utility/explicit.tcl ${CMDFILE} 
++	make -f Makefile -n -s | $(TCL) ../utility/replace.tcl "-I./" -I${XF86SRC.401} > ${CMDFILE}
++	$(TCL) ../utility/explicit.tcl ${CMDFILE} 
+ 	if [ -f $@ ]; then cp $@ bin; fi;
+ 	rm -f ${CMDFILE}
+ 
+ xf86$(MOD_NAME).so : xf86$(MOD_NAME).c xf86$(MOD_NAME).h ../include/TouchCmd.h
+ 	echo Hi > xf86Summa.c
+-	make -f Makefile -n -s xf86Summa.so | tcl ../utility/replace.tcl "-I./" -I${XF86SRC.336} | tcl ../utility/replace.tcl "Summa" "$(MOD_NAME)" > ${CMDFILE}
++	make -f Makefile -n -s xf86Summa.so | $(TCL) ../utility/replace.tcl "-I./" -I${XF86SRC.336} | $(TCL) ../utility/replace.tcl "Summa" "$(MOD_NAME)" > ${CMDFILE}
+ 	$(RM) xf86Summa.c
+-	tcl ../utility/explicit.tcl ${CMDFILE}
++	$(TCL) ../utility/explicit.tcl ${CMDFILE}
+ 	if [ -f $@ ]; then cp $@ bin; fi;
+ 	rm -f ${CMDFILE}
+ 
+@@ -83,7 +83,7 @@
+ 	rm -f *.o *.so core *.bak Makefile Imakefile xf86Summa.* *.tmp
+ 
+ Imakefile: Imakefile.401a Imakefile.336
+-	@xversion=`tcl ../utility/xversion.tcl`;					\
++	@xversion=`$(TCL) ../utility/xversion.tcl`;					\
+ 	echo "X version: $$xversion";								\
+ 	if [ "$$xversion" -gt 400 ]; then							\
+ 		cp -f Imakefile.401a $@;								\

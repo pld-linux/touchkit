@@ -13,6 +13,7 @@ Source1:	http://www.egalax.com.tw/NEWTouchKitv31.exe
 Source2:	http://www.egalax.com.tw/TouchKitManualv2_5.exe
 Source3:	http://www.egalax.com.tw/SoftwareProgrammingGuidev1_1.exe
 Patch0:		%{name}-lessmess.patch
+Patch1:		%{name}-2.4.20.patch
 URL:		http://www.egalax.com.tw/
 BuildRequires:	XFree86-devel
 %{!?_without_dist_kernel:BuildRequires:	kernel-headers}
@@ -78,7 +79,8 @@ for f in %{SOURCE0} %{SOURCE1} %{SOURCE2} %{SOURCE3} ; do
 	unrar x $f
 done
 uudecode Linux/touchkit.setup.sh -o /dev/stdout | tar xzf - -C ..
-%patch -p1
+%patch0 -p1
+%patch1 -p1
 
 # no spaces please
 mv -f 'Software Programming Guide v1_1.pdf' Software_Programming_Guide_v1_1.pdf

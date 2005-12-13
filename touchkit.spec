@@ -33,11 +33,11 @@ URL:		http://www.egalax.com.tw/
 BuildRequires:	XFree86-Xserver-devel > 4.3.99.902-0.1
 BuildRequires:	XFree86-devel
 %if %{with kernel}
-%{?with_dist_kernel:BuildRequires:	kernel-headers < 2.5}
 BuildRequires:	%{kgcc_package}
+%{?with_dist_kernel:BuildRequires:	kernel-headers < 2.5}
 %endif
-BuildRequires:	sharutils
 BuildRequires:	rpmbuild(macros) >= 1.118
+BuildRequires:	sharutils
 BuildRequires:	tcl
 BuildRequires:	unzip
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -64,7 +64,7 @@ poleceñ oraz z graficznym interfejsem).
 %package -n XFree86-input-touchkit
 Summary:	XFree86 input driver module for eGalax TouchKit panels
 Summary(pl):	Modu³ sterownika wej¶ciowego XFree86 dla paneli dotykowych eGalax TouchKit
-Group:		X11/XFree86
+Group:		X11
 %{requires_eq_to XFree86-modules XFree86-Xserver-devel}
 
 %description -n XFree86-input-touchkit
@@ -191,7 +191,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc *.pdf
 %attr(755,root,root) %{_bindir}/*
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/usbpnpd.conf
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/usbpnpd.conf
 %dir %{_libdir}/TouchKit
 %attr(755,root,root) %{_libdir}/TouchKit/touchcfg
 %attr(755,root,root) %{_libdir}/TouchKit/tpaneld

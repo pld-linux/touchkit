@@ -5,7 +5,7 @@
 %bcond_without	userspace	# don't build userspace tools
 #
 Summary:	eGalax TouchKit drivers and utilities
-Summary(pl.UTF-8):   Sterowniki i narzędzia do paneli dotykowych eGalax TouchKit
+Summary(pl.UTF-8):	Sterowniki i narzędzia do paneli dotykowych eGalax TouchKit
 Name:		touchkit
 Version:	1.0.2.2013
 %define	rel	1
@@ -50,7 +50,7 @@ Sterowniki i narzędzia do paneli dotykowych eGalax TouchKit.
 
 %package utils
 Summary:	eGalax TouchKit utilities
-Summary(pl.UTF-8):   Narzędzia do paneli dotykowych eGalax TouchKit
+Summary(pl.UTF-8):	Narzędzia do paneli dotykowych eGalax TouchKit
 Group:		Applications/System
 Requires:	tk
 
@@ -63,7 +63,7 @@ poleceń oraz z graficznym interfejsem).
 
 %package -n XFree86-input-touchkit
 Summary:	XFree86 input driver module for eGalax TouchKit panels
-Summary(pl.UTF-8):   Moduł sterownika wejściowego XFree86 dla paneli dotykowych eGalax TouchKit
+Summary(pl.UTF-8):	Moduł sterownika wejściowego XFree86 dla paneli dotykowych eGalax TouchKit
 Group:		X11
 %{requires_eq_to XFree86-modules XFree86-Xserver-devel}
 
@@ -76,7 +76,7 @@ TouchKit.
 
 %package -n kernel-usb-touchkit
 Summary:	Linux driver for eGalax TouchKit USB panels
-Summary(pl.UTF-8):   Sterownik Linuksa dla paneli dotykowych USB eGalax TouchKit
+Summary(pl.UTF-8):	Sterownik Linuksa dla paneli dotykowych USB eGalax TouchKit
 Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 %{?with_dist_kernel:%requires_releq_kernel_up}
@@ -91,7 +91,7 @@ podłączanej przez USB.
 
 %package -n kernel-smp-usb-touchkit
 Summary:	Linux SMP driver for eGalax TouchKit USB panels
-Summary(pl.UTF-8):   Sterownik Linuksa SMP dla paneli dotykowych USB eGalax TouchKit
+Summary(pl.UTF-8):	Sterownik Linuksa SMP dla paneli dotykowych USB eGalax TouchKit
 Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 %{?with_dist_kernel:%requires_releq_kernel_smp}

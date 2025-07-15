@@ -107,8 +107,8 @@ podłączanej przez USB.
 %prep
 %setup -q -n TouchKit_Linux
 uudecode touchkit.setupr8nm.sh -o /dev/stdout | tar xzf -
-%patch0 -p0
-%patch1 -p0
+%patch -P0 -p0
+%patch -P1 -p0
 
 cp %{SOURCE1} %{SOURCE3} .
 # no spaces please
